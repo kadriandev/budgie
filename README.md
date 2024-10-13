@@ -48,4 +48,3 @@ export default tseslint.config({
   },
 })
 ```
->>>>>>> 4aa5973 (Init vite app for budgie)
