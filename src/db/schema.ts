@@ -2,6 +2,7 @@ import { relations, sql } from "drizzle-orm";
 import {
 	index,
 	integer,
+	check,
 	real,
 	sqliteTable,
 	text,
@@ -59,6 +60,14 @@ export const imports = sqliteTable(
 
 		fileName: text("file_name").notNull(),
 		fileHash: text("file_hash").notNull(),
+		parserVersion: text("parser_version").notNull().default("v1"),
+
+		rowCount: integer("row_count").notNull().default(0),
+		successCount: integer("success_count").notNull().default(0),
+		duplicateCount: integer("duplicate_count").notNull().default(0),
+		failureCount: integer("failure_count").notNull().default(0),
+
+		errorMessage: text("error_message"),
 
 		status: text("status", { enum: importStatus }).notNull().default("pending"),
 
@@ -66,7 +75,20 @@ export const imports = sqliteTable(
 			.notNull()
 			.default(sql`CURRENT_TIMESTAMP`),
 	},
-	(table) => [uniqueIndex("imports_file_hash_idx").on(table.fileHash)],
+	(table) => [
+		uniqueIndex("imports_file_hash_idx").on(table.fileHash),
+		check("imports_row_count_non_negative", sql`${table.rowCount} >= 0`),
+		check("imports_success_count_non_negative", sql`${table.successCount} >= 0`),
+		check(
+			"imports_duplicate_count_non_negative",
+			sql`${table.duplicateCount} >= 0`,
+		),
+		check("imports_failure_count_non_negative", sql`${table.failureCount} >= 0`),
+		check(
+			"imports_count_totals_match",
+			sql`${table.rowCount} = ${table.successCount} + ${table.duplicateCount} + ${table.failureCount}`,
+		),
+	],
 );
 
 export const envelopes = sqliteTable(
