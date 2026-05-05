@@ -11,7 +11,12 @@ import {
 export const budgetBucket = ["needs", "wants", "savings"] as const;
 export const envelopeType = ["fixed", "flexible", "goal"] as const;
 export const transactionType = ["debit", "credit", "transfer"] as const;
-export const importStatus = ["pending", "processed", "failed"] as const;
+export const importStatus = [
+	"pending",
+	"processing",
+	"processed",
+	"failed",
+] as const;
 
 // Users are optional if this is single-user self-hosted,
 // but useful if you ever support households/multiple profiles.
