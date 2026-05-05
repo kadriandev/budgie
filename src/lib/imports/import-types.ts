@@ -8,6 +8,22 @@ export type CreateImportInput = {
 	accountId: string;
 	fileName: string;
 	fileHash: string;
+	parserVersion?: string;
+};
+
+type BaseImportOutcomeMetadata = {
+	rowCount: number;
+	successCount: number;
+	duplicateCount: number;
+	failureCount: number;
+	};
+
+export type ImportOutcomeMetadata = BaseImportOutcomeMetadata & {
+	errorMessage?: string | null;
+};
+
+export type FailedImportOutcomeMetadata = BaseImportOutcomeMetadata & {
+	errorMessage: string;
 };
 
 export type AllowedImportTransition =
@@ -22,6 +38,7 @@ export type AllowedImportTransition =
 
 export type TransitionStatusInput = AllowedImportTransition & {
 	importId: string;
+	metadata?: ImportOutcomeMetadata;
 };
 
 export interface ImportRepository {

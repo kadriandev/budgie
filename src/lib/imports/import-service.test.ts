@@ -5,7 +5,27 @@ import {
 	InvalidImportStatusTransitionError,
 } from "./import-errors";
 import { ImportService } from "./import-service";
-import type { ImportRecord, ImportRepository } from "./import-types";
+import type {
+	ImportOutcomeMetadata,
+	ImportRecord,
+	ImportRepository,
+} from "./import-types";
+
+const successfulMetadata: ImportOutcomeMetadata = {
+	rowCount: 10,
+	successCount: 8,
+	duplicateCount: 1,
+	failureCount: 1,
+	errorMessage: null,
+};
+
+const failedMetadata: ImportOutcomeMetadata = {
+	rowCount: 10,
+	successCount: 3,
+	duplicateCount: 2,
+	failureCount: 5,
+	errorMessage: "CSV malformed at row 9",
+};
 
 const makeImportRecord = (status: ImportRecord["status"]): ImportRecord => ({
 	id: "import-1",
@@ -13,6 +33,12 @@ const makeImportRecord = (status: ImportRecord["status"]): ImportRecord => ({
 	accountId: "account-1",
 	fileName: "transactions.csv",
 	fileHash: "hash-1",
+	parserVersion: "v2",
+	rowCount: 10,
+	successCount: 8,
+	duplicateCount: 1,
+	failureCount: 1,
+	errorMessage: null,
 	status,
 	importedAt: new Date(2000, 0, 1),
 });
@@ -35,6 +61,7 @@ describe("ImportService", () => {
 			accountId: "account-1",
 			fileHash: "hash-1",
 			fileName: "transactions.csv",
+			parserVersion: "v2",
 			userId: "user-1",
 		});
 
@@ -42,6 +69,7 @@ describe("ImportService", () => {
 			accountId: "account-1",
 			fileHash: "hash-1",
 			fileName: "transactions.csv",
+			parserVersion: "v2",
 			userId: "user-1",
 		});
 		expect(result).toEqual(createdImport);
@@ -65,7 +93,7 @@ describe("ImportService", () => {
 		expect(result).toEqual(makeImportRecord("processing"));
 	});
 
-	it("transitions processing -> processed", async () => {
+	it("transitions processing -> processed and persists outcome metadata", async () => {
 		const repository = makeRepositoryMock();
 		const service = new ImportService(repository);
 
@@ -73,17 +101,18 @@ describe("ImportService", () => {
 			makeImportRecord("processed"),
 		);
 
-		const result = await service.markImportProcessed("import-1");
+		const result = await service.markImportProcessed("import-1", successfulMetadata);
 
 		expect(repository.transitionStatus).toHaveBeenCalledWith({
 			importId: "import-1",
 			from: "processing",
 			to: "processed",
+			metadata: successfulMetadata,
 		});
 		expect(result).toEqual(makeImportRecord("processed"));
 	});
 
-	it("transitions processing -> failed", async () => {
+	it("transitions processing -> failed and persists failure metadata", async () => {
 		const repository = makeRepositoryMock();
 		const service = new ImportService(repository);
 
@@ -91,12 +120,13 @@ describe("ImportService", () => {
 			makeImportRecord("failed"),
 		);
 
-		const result = await service.markImportFailed("import-1");
+		const result = await service.markImportFailed("import-1", failedMetadata);
 
 		expect(repository.transitionStatus).toHaveBeenCalledWith({
 			importId: "import-1",
 			from: "processing",
 			to: "failed",
+			metadata: failedMetadata,
 		});
 		expect(result).toEqual(makeImportRecord("failed"));
 	});
@@ -111,7 +141,7 @@ describe("ImportService", () => {
 		);
 
 		await expect(
-			service.markImportProcessed("import-1"),
+			service.markImportProcessed("import-1", successfulMetadata),
 		).rejects.toBeInstanceOf(InvalidImportStatusTransitionError);
 	});
 
@@ -150,8 +180,38 @@ describe("ImportService", () => {
 			makeImportRecord("processed"),
 		);
 
-		await expect(service.markImportFailed("import-1")).rejects.toBeInstanceOf(
-			InvalidImportStatusTransitionError,
-		);
+		await expect(
+			service.markImportFailed("import-1", failedMetadata),
+		).rejects.toBeInstanceOf(InvalidImportStatusTransitionError);
+	});
+
+	it("throws when outcome metadata totals do not match", async () => {
+		const repository = makeRepositoryMock();
+		const service = new ImportService(repository);
+
+		await expect(
+			service.markImportProcessed("import-1", {
+				rowCount: 10,
+				successCount: 8,
+				duplicateCount: 1,
+				failureCount: 0,
+				errorMessage: null,
+			}),
+		).rejects.toThrow("rowCount must equal successCount + duplicateCount + failureCount");
+	});
+
+	it("throws when failed metadata has empty error message", async () => {
+		const repository = makeRepositoryMock();
+		const service = new ImportService(repository);
+
+		await expect(
+			service.markImportFailed("import-1", {
+				rowCount: 10,
+				successCount: 3,
+				duplicateCount: 2,
+				failureCount: 5,
+				errorMessage: " ",
+			}),
+		).rejects.toThrow("requires a non-empty errorMessage");
 	});
 });

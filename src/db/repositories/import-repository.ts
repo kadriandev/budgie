@@ -19,6 +19,7 @@ export const importRepository: ImportRepository = {
 				accountId: input.accountId,
 				fileName: input.fileName,
 				fileHash: input.fileHash,
+				parserVersion: input.parserVersion ?? "v1",
 				status: "pending",
 			})
 			.returning()
@@ -34,10 +35,19 @@ export const importRepository: ImportRepository = {
 	async transitionStatus(
 		input: TransitionStatusInput,
 	): Promise<ImportRecord | null> {
+		const metadata = input.metadata;
+
 		return (
 			db
 				.update(imports)
-				.set({ status: input.to })
+				.set({
+					status: input.to,
+					rowCount: metadata?.rowCount,
+					successCount: metadata?.successCount,
+					duplicateCount: metadata?.duplicateCount,
+					failureCount: metadata?.failureCount,
+					errorMessage: metadata?.errorMessage ?? null,
+				})
 				.where(
 					and(eq(imports.id, input.importId), eq(imports.status, input.from)),
 				)

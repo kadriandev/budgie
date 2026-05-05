@@ -4,8 +4,10 @@ import {
 } from "./import-errors";
 import type {
 	CreateImportInput,
+	FailedImportOutcomeMetadata,
 	ImportRecord,
 	ImportRepository,
+	ImportOutcomeMetadata,
 	TransitionStatusInput,
 } from "./import-types";
 
@@ -24,19 +26,35 @@ export class ImportService {
 		});
 	}
 
-	markImportProcessed(importId: string): Promise<ImportRecord> {
+	async markImportProcessed(
+		importId: string,
+		metadata: ImportOutcomeMetadata,
+	): Promise<ImportRecord> {
+		assertValidOutcomeMetadata(metadata);
+
 		return this.transitionOrThrow({
 			importId,
 			from: "processing",
 			to: "processed",
+			metadata,
 		});
 	}
 
-	markImportFailed(importId: string): Promise<ImportRecord> {
+	async markImportFailed(
+		importId: string,
+		metadata: FailedImportOutcomeMetadata,
+	): Promise<ImportRecord> {
+		assertValidOutcomeMetadata(metadata);
+
+		if (metadata.errorMessage.trim().length === 0) {
+			throw new Error("Failed import metadata requires a non-empty errorMessage");
+		}
+
 		return this.transitionOrThrow({
 			importId,
 			from: "processing",
 			to: "failed",
+			metadata,
 		});
 	}
 
@@ -58,3 +76,27 @@ export class ImportService {
 		return updatedImport;
 	}
 }
+
+const assertValidOutcomeMetadata = (metadata: ImportOutcomeMetadata): void => {
+	const counts = [
+		metadata.rowCount,
+		metadata.successCount,
+		metadata.duplicateCount,
+		metadata.failureCount,
+	];
+
+	for (const count of counts) {
+		if (!Number.isInteger(count) || count < 0) {
+			throw new Error("Import outcome counts must be non-negative integers");
+		}
+	}
+
+	const total =
+		metadata.successCount + metadata.duplicateCount + metadata.failureCount;
+
+	if (metadata.rowCount !== total) {
+		throw new Error(
+			"Import outcome metadata is inconsistent: rowCount must equal successCount + duplicateCount + failureCount",
+		);
+	}
+};
