@@ -24,6 +24,16 @@ export type {
 	ManualClassificationInput,
 	ManualClassificationResult,
 } from "./manual-classification";
+export {
+	DEFAULT_REVIEW_CONFIDENCE_THRESHOLD,
+	getNeedsReviewTransactions,
+	isNeedsReview,
+} from "./needs-review-query";
+export type {
+	NeedsReviewQueryOptions,
+	NeedsReviewQueryResult,
+	NeedsReviewTransaction,
+} from "./needs-review-query";
 export type { ClassifiedImportRow, ImportClassificationRow } from "./post-import-classifier";
 export { applyPostImportClassification } from "./post-import-classifier";
 export type {
