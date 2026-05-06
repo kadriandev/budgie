@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
 	parseImportUploadRequest,
 	UploadValidationError,
-} from "./upload-validation";
+} from "../upload-validation";
 
 const makeRequest = ({
 	userId,

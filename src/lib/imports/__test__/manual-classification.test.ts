@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import {
-	applyManualTransactionClassification,
-	ManualClassificationError,
-} from "./manual-classification";
+import { applyManualTransactionClassification } from "../manual-classification";
 
 const buildDeps = () => ({
 	findOwnedTransaction: vi.fn(),
