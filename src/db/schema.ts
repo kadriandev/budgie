@@ -329,6 +329,38 @@ export const envelopeMonthlySummaries = sqliteTable(
 	],
 );
 
+export const envelopeBudgetAllocations = sqliteTable(
+	"envelope_budget_allocations",
+	{
+		id: text("id").primaryKey(),
+		envelopeId: text("envelope_id")
+			.notNull()
+			.references(() => envelopes.id, { onDelete: "cascade" }),
+		month: text("month").notNull(),
+		plannedAmount: real("planned_amount").notNull(),
+		createdAt: integer("created_at", { mode: "timestamp" })
+			.notNull()
+			.default(sql`CURRENT_TIMESTAMP`),
+		updatedAt: integer("updated_at", { mode: "timestamp" })
+			.notNull()
+			.default(sql`CURRENT_TIMESTAMP`),
+	},
+	(table) => [
+		uniqueIndex("envelope_budget_allocations_envelope_month_idx").on(
+			table.envelopeId,
+			table.month,
+		),
+		check(
+			"envelope_budget_allocations_month_format",
+			sql`${table.month} GLOB '[0-9][0-9][0-9][0-9]-[0-1][0-9]' AND CAST(substr(${table.month}, 6, 2) AS INTEGER) BETWEEN 1 AND 12`,
+		),
+		check(
+			"envelope_budget_allocations_planned_amount_non_negative",
+			sql`${table.plannedAmount} >= 0`,
+		),
+	],
+);
+
 export const usersRelations = relations(users, ({ many }) => ({
 	accounts: many(accounts),
 	envelopes: many(envelopes),
@@ -366,6 +398,7 @@ export const envelopesRelations = relations(envelopes, ({ one, many }) => ({
 	}),
 	goal: one(goals),
 	transactions: many(transactions),
+	allocations: many(envelopeBudgetAllocations),
 }));
 
 export const goalsRelations = relations(goals, ({ one }) => ({
@@ -400,3 +433,13 @@ export const importErrorsRelations = relations(importErrors, ({ one }) => ({
 		references: [imports.id],
 	}),
 }));
+
+export const envelopeBudgetAllocationsRelations = relations(
+	envelopeBudgetAllocations,
+	({ one }) => ({
+		envelope: one(envelopes, {
+			fields: [envelopeBudgetAllocations.envelopeId],
+			references: [envelopes.id],
+		}),
+	}),
+);

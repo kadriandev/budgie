@@ -14,6 +14,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiImportsRouteImport } from './routes/api.imports'
 import { Route as ApiTransactionsReviewRouteImport } from './routes/api.transactions.review'
 import { Route as ApiTransactionsTransactionIdClassificationRouteImport } from './routes/api.transactions.$transactionId.classification'
+import { Route as ApiEnvelopesEnvelopeIdAllocationsRouteImport } from './routes/api.envelopes.$envelopeId.allocations'
 
 const TransactionsRoute = TransactionsRouteImport.update({
   id: '/transactions',
@@ -41,12 +42,19 @@ const ApiTransactionsTransactionIdClassificationRoute =
     path: '/api/transactions/$transactionId/classification',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiEnvelopesEnvelopeIdAllocationsRoute =
+  ApiEnvelopesEnvelopeIdAllocationsRouteImport.update({
+    id: '/api/envelopes/$envelopeId/allocations',
+    path: '/api/envelopes/$envelopeId/allocations',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/transactions': typeof TransactionsRoute
   '/api/imports': typeof ApiImportsRoute
   '/api/transactions/review': typeof ApiTransactionsReviewRoute
+  '/api/envelopes/$envelopeId/allocations': typeof ApiEnvelopesEnvelopeIdAllocationsRoute
   '/api/transactions/$transactionId/classification': typeof ApiTransactionsTransactionIdClassificationRoute
 }
 export interface FileRoutesByTo {
@@ -54,6 +62,7 @@ export interface FileRoutesByTo {
   '/transactions': typeof TransactionsRoute
   '/api/imports': typeof ApiImportsRoute
   '/api/transactions/review': typeof ApiTransactionsReviewRoute
+  '/api/envelopes/$envelopeId/allocations': typeof ApiEnvelopesEnvelopeIdAllocationsRoute
   '/api/transactions/$transactionId/classification': typeof ApiTransactionsTransactionIdClassificationRoute
 }
 export interface FileRoutesById {
@@ -62,6 +71,7 @@ export interface FileRoutesById {
   '/transactions': typeof TransactionsRoute
   '/api/imports': typeof ApiImportsRoute
   '/api/transactions/review': typeof ApiTransactionsReviewRoute
+  '/api/envelopes/$envelopeId/allocations': typeof ApiEnvelopesEnvelopeIdAllocationsRoute
   '/api/transactions/$transactionId/classification': typeof ApiTransactionsTransactionIdClassificationRoute
 }
 export interface FileRouteTypes {
@@ -71,6 +81,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/api/imports'
     | '/api/transactions/review'
+    | '/api/envelopes/$envelopeId/allocations'
     | '/api/transactions/$transactionId/classification'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -78,6 +89,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/api/imports'
     | '/api/transactions/review'
+    | '/api/envelopes/$envelopeId/allocations'
     | '/api/transactions/$transactionId/classification'
   id:
     | '__root__'
@@ -85,6 +97,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/api/imports'
     | '/api/transactions/review'
+    | '/api/envelopes/$envelopeId/allocations'
     | '/api/transactions/$transactionId/classification'
   fileRoutesById: FileRoutesById
 }
@@ -93,6 +106,7 @@ export interface RootRouteChildren {
   TransactionsRoute: typeof TransactionsRoute
   ApiImportsRoute: typeof ApiImportsRoute
   ApiTransactionsReviewRoute: typeof ApiTransactionsReviewRoute
+  ApiEnvelopesEnvelopeIdAllocationsRoute: typeof ApiEnvelopesEnvelopeIdAllocationsRoute
   ApiTransactionsTransactionIdClassificationRoute: typeof ApiTransactionsTransactionIdClassificationRoute
 }
 
@@ -133,6 +147,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiTransactionsTransactionIdClassificationRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/envelopes/$envelopeId/allocations': {
+      id: '/api/envelopes/$envelopeId/allocations'
+      path: '/api/envelopes/$envelopeId/allocations'
+      fullPath: '/api/envelopes/$envelopeId/allocations'
+      preLoaderRoute: typeof ApiEnvelopesEnvelopeIdAllocationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -141,6 +162,8 @@ const rootRouteChildren: RootRouteChildren = {
   TransactionsRoute: TransactionsRoute,
   ApiImportsRoute: ApiImportsRoute,
   ApiTransactionsReviewRoute: ApiTransactionsReviewRoute,
+  ApiEnvelopesEnvelopeIdAllocationsRoute:
+    ApiEnvelopesEnvelopeIdAllocationsRoute,
   ApiTransactionsTransactionIdClassificationRoute:
     ApiTransactionsTransactionIdClassificationRoute,
 }

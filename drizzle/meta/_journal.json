@@ -29,6 +29,20 @@
       "when": 1778031512415,
       "tag": "0003_milky_tusk",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1778034854355,
+      "tag": "0004_motionless_riptide",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1778034928295,
+      "tag": "0005_short_doctor_faustus",
+      "breakpoints": true
     }
   ]
 }
