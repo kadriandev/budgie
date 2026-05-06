@@ -14,6 +14,8 @@ export {
 	ImportNotFoundError,
 	InvalidImportStatusTransitionError,
 } from "./import-errors";
+export type { ClassificationResult } from "./merchant-classifier";
+export { classifyTransactionWithMerchantRules } from "./merchant-classifier";
 export type {
 	ImportRowProcessingResult,
 	ProcessImportRowsOptions,
