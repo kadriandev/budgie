@@ -15,6 +15,7 @@ import { Route as ApiImportsRouteImport } from './routes/api.imports'
 import { Route as ApiTransactionsReviewRouteImport } from './routes/api.transactions.review'
 import { Route as ApiTransactionsTransactionIdClassificationRouteImport } from './routes/api.transactions.$transactionId.classification'
 import { Route as ApiEnvelopesEnvelopeIdAllocationsRouteImport } from './routes/api.envelopes.$envelopeId.allocations'
+import { Route as ApiEnvelopesEnvelopeIdActualSpendRouteImport } from './routes/api.envelopes.$envelopeId.actual-spend'
 
 const TransactionsRoute = TransactionsRouteImport.update({
   id: '/transactions',
@@ -48,12 +49,19 @@ const ApiEnvelopesEnvelopeIdAllocationsRoute =
     path: '/api/envelopes/$envelopeId/allocations',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiEnvelopesEnvelopeIdActualSpendRoute =
+  ApiEnvelopesEnvelopeIdActualSpendRouteImport.update({
+    id: '/api/envelopes/$envelopeId/actual-spend',
+    path: '/api/envelopes/$envelopeId/actual-spend',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/transactions': typeof TransactionsRoute
   '/api/imports': typeof ApiImportsRoute
   '/api/transactions/review': typeof ApiTransactionsReviewRoute
+  '/api/envelopes/$envelopeId/actual-spend': typeof ApiEnvelopesEnvelopeIdActualSpendRoute
   '/api/envelopes/$envelopeId/allocations': typeof ApiEnvelopesEnvelopeIdAllocationsRoute
   '/api/transactions/$transactionId/classification': typeof ApiTransactionsTransactionIdClassificationRoute
 }
@@ -62,6 +70,7 @@ export interface FileRoutesByTo {
   '/transactions': typeof TransactionsRoute
   '/api/imports': typeof ApiImportsRoute
   '/api/transactions/review': typeof ApiTransactionsReviewRoute
+  '/api/envelopes/$envelopeId/actual-spend': typeof ApiEnvelopesEnvelopeIdActualSpendRoute
   '/api/envelopes/$envelopeId/allocations': typeof ApiEnvelopesEnvelopeIdAllocationsRoute
   '/api/transactions/$transactionId/classification': typeof ApiTransactionsTransactionIdClassificationRoute
 }
@@ -71,6 +80,7 @@ export interface FileRoutesById {
   '/transactions': typeof TransactionsRoute
   '/api/imports': typeof ApiImportsRoute
   '/api/transactions/review': typeof ApiTransactionsReviewRoute
+  '/api/envelopes/$envelopeId/actual-spend': typeof ApiEnvelopesEnvelopeIdActualSpendRoute
   '/api/envelopes/$envelopeId/allocations': typeof ApiEnvelopesEnvelopeIdAllocationsRoute
   '/api/transactions/$transactionId/classification': typeof ApiTransactionsTransactionIdClassificationRoute
 }
@@ -81,6 +91,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/api/imports'
     | '/api/transactions/review'
+    | '/api/envelopes/$envelopeId/actual-spend'
     | '/api/envelopes/$envelopeId/allocations'
     | '/api/transactions/$transactionId/classification'
   fileRoutesByTo: FileRoutesByTo
@@ -89,6 +100,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/api/imports'
     | '/api/transactions/review'
+    | '/api/envelopes/$envelopeId/actual-spend'
     | '/api/envelopes/$envelopeId/allocations'
     | '/api/transactions/$transactionId/classification'
   id:
@@ -97,6 +109,7 @@ export interface FileRouteTypes {
     | '/transactions'
     | '/api/imports'
     | '/api/transactions/review'
+    | '/api/envelopes/$envelopeId/actual-spend'
     | '/api/envelopes/$envelopeId/allocations'
     | '/api/transactions/$transactionId/classification'
   fileRoutesById: FileRoutesById
@@ -106,6 +119,7 @@ export interface RootRouteChildren {
   TransactionsRoute: typeof TransactionsRoute
   ApiImportsRoute: typeof ApiImportsRoute
   ApiTransactionsReviewRoute: typeof ApiTransactionsReviewRoute
+  ApiEnvelopesEnvelopeIdActualSpendRoute: typeof ApiEnvelopesEnvelopeIdActualSpendRoute
   ApiEnvelopesEnvelopeIdAllocationsRoute: typeof ApiEnvelopesEnvelopeIdAllocationsRoute
   ApiTransactionsTransactionIdClassificationRoute: typeof ApiTransactionsTransactionIdClassificationRoute
 }
@@ -154,6 +168,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiEnvelopesEnvelopeIdAllocationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/envelopes/$envelopeId/actual-spend': {
+      id: '/api/envelopes/$envelopeId/actual-spend'
+      path: '/api/envelopes/$envelopeId/actual-spend'
+      fullPath: '/api/envelopes/$envelopeId/actual-spend'
+      preLoaderRoute: typeof ApiEnvelopesEnvelopeIdActualSpendRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -162,6 +183,8 @@ const rootRouteChildren: RootRouteChildren = {
   TransactionsRoute: TransactionsRoute,
   ApiImportsRoute: ApiImportsRoute,
   ApiTransactionsReviewRoute: ApiTransactionsReviewRoute,
+  ApiEnvelopesEnvelopeIdActualSpendRoute:
+    ApiEnvelopesEnvelopeIdActualSpendRoute,
   ApiEnvelopesEnvelopeIdAllocationsRoute:
     ApiEnvelopesEnvelopeIdAllocationsRoute,
   ApiTransactionsTransactionIdClassificationRoute:
