@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiImportsRouteImport } from './routes/api.imports'
+import { Route as ApiTransactionsReviewRouteImport } from './routes/api.transactions.review'
 import { Route as ApiTransactionsTransactionIdClassificationRouteImport } from './routes/api.transactions.$transactionId.classification'
 
 const TransactionsRoute = TransactionsRouteImport.update({
@@ -29,6 +30,11 @@ const ApiImportsRoute = ApiImportsRouteImport.update({
   path: '/api/imports',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTransactionsReviewRoute = ApiTransactionsReviewRouteImport.update({
+  id: '/api/transactions/review',
+  path: '/api/transactions/review',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiTransactionsTransactionIdClassificationRoute =
   ApiTransactionsTransactionIdClassificationRouteImport.update({
     id: '/api/transactions/$transactionId/classification',
@@ -40,12 +46,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/transactions': typeof TransactionsRoute
   '/api/imports': typeof ApiImportsRoute
+  '/api/transactions/review': typeof ApiTransactionsReviewRoute
   '/api/transactions/$transactionId/classification': typeof ApiTransactionsTransactionIdClassificationRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/transactions': typeof TransactionsRoute
   '/api/imports': typeof ApiImportsRoute
+  '/api/transactions/review': typeof ApiTransactionsReviewRoute
   '/api/transactions/$transactionId/classification': typeof ApiTransactionsTransactionIdClassificationRoute
 }
 export interface FileRoutesById {
@@ -53,6 +61,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/transactions': typeof TransactionsRoute
   '/api/imports': typeof ApiImportsRoute
+  '/api/transactions/review': typeof ApiTransactionsReviewRoute
   '/api/transactions/$transactionId/classification': typeof ApiTransactionsTransactionIdClassificationRoute
 }
 export interface FileRouteTypes {
@@ -61,18 +70,21 @@ export interface FileRouteTypes {
     | '/'
     | '/transactions'
     | '/api/imports'
+    | '/api/transactions/review'
     | '/api/transactions/$transactionId/classification'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/transactions'
     | '/api/imports'
+    | '/api/transactions/review'
     | '/api/transactions/$transactionId/classification'
   id:
     | '__root__'
     | '/'
     | '/transactions'
     | '/api/imports'
+    | '/api/transactions/review'
     | '/api/transactions/$transactionId/classification'
   fileRoutesById: FileRoutesById
 }
@@ -80,6 +92,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TransactionsRoute: typeof TransactionsRoute
   ApiImportsRoute: typeof ApiImportsRoute
+  ApiTransactionsReviewRoute: typeof ApiTransactionsReviewRoute
   ApiTransactionsTransactionIdClassificationRoute: typeof ApiTransactionsTransactionIdClassificationRoute
 }
 
@@ -106,6 +119,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiImportsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/transactions/review': {
+      id: '/api/transactions/review'
+      path: '/api/transactions/review'
+      fullPath: '/api/transactions/review'
+      preLoaderRoute: typeof ApiTransactionsReviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/transactions/$transactionId/classification': {
       id: '/api/transactions/$transactionId/classification'
       path: '/api/transactions/$transactionId/classification'
@@ -120,6 +140,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TransactionsRoute: TransactionsRoute,
   ApiImportsRoute: ApiImportsRoute,
+  ApiTransactionsReviewRoute: ApiTransactionsReviewRoute,
   ApiTransactionsTransactionIdClassificationRoute:
     ApiTransactionsTransactionIdClassificationRoute,
 }
