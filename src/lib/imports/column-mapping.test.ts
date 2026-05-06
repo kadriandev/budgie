@@ -4,12 +4,7 @@ import { suggestColumnMapping, validateColumnMapping } from "./column-mapping";
 
 describe("suggestColumnMapping", () => {
 	it("suggests mappings using second-row values", () => {
-		const mapping = suggestColumnMapping([
-			"col_1",
-			"col_2",
-			"col_3",
-			"col_4",
-		], {
+		const mapping = suggestColumnMapping(["col_1", "col_2", "col_3", "col_4"], {
 			col_1: "2026-05-01",
 			col_2: "Coffee shop",
 			col_3: "-4.25",

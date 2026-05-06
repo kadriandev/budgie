@@ -46,7 +46,10 @@ export const normalizeTransactionRow = (
 	}
 
 	if (!descriptionValue) {
-		return { rowNumber: row.rowNumber, message: "Missing description column value" };
+		return {
+			rowNumber: row.rowNumber,
+			message: "Missing description column value",
+		};
 	}
 
 	const parsedDate = new Date(dateValue);
@@ -64,7 +67,10 @@ export const normalizeTransactionRow = (
 			: parseDebitCreditAmount(debitAmount, creditAmount);
 
 	if (amount === null) {
-		return { rowNumber: row.rowNumber, message: "Missing or invalid amount value" };
+		return {
+			rowNumber: row.rowNumber,
+			message: "Missing or invalid amount value",
+		};
 	}
 
 	const normalizedType = inferTransactionType(amount, descriptionValue);
@@ -72,7 +78,8 @@ export const normalizeTransactionRow = (
 	return {
 		rowNumber: row.rowNumber,
 		date: parsedDate,
-		merchantName: merchantValue && merchantValue.length > 0 ? merchantValue : null,
+		merchantName:
+			merchantValue && merchantValue.length > 0 ? merchantValue : null,
 		description: descriptionValue,
 		amount,
 		type: normalizedType,
@@ -80,7 +87,10 @@ export const normalizeTransactionRow = (
 	};
 };
 
-const findByHeader = (values: Record<string, string>, key: string): string | null => {
+const findByHeader = (
+	values: Record<string, string>,
+	key: string,
+): string | null => {
 	const match = Object.entries(values).find(
 		([header]) => header.trim().toLowerCase() === key,
 	);

@@ -1,11 +1,7 @@
 import type { TransitionStatusInput } from "./import-types";
 
 export class InvalidImportStatusTransitionError extends Error {
-	constructor({
-		importId,
-		from,
-		to,
-	}: TransitionStatusInput) {
+	constructor({ importId, from, to }: TransitionStatusInput) {
 		super(`Invalid import status transition for ${importId}: ${from} -> ${to}`);
 		this.name = "InvalidImportStatusTransitionError";
 	}

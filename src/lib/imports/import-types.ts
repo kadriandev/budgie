@@ -1,4 +1,4 @@
-import type { imports } from "#/db/schema";
+import type { importErrorCode, imports } from "#/db/schema";
 
 export type ImportStatus = (typeof imports.$inferSelect)["status"];
 export type ImportRecord = typeof imports.$inferSelect;
@@ -16,7 +16,7 @@ type BaseImportOutcomeMetadata = {
 	successCount: number;
 	duplicateCount: number;
 	failureCount: number;
-	};
+};
 
 export type ImportOutcomeMetadata = BaseImportOutcomeMetadata & {
 	errorMessage?: string | null;
@@ -46,3 +46,12 @@ export interface ImportRepository {
 	findById(importId: string): Promise<ImportRecord | null>;
 	transitionStatus(input: TransitionStatusInput): Promise<ImportRecord | null>;
 }
+
+export type ImportErrorCode = (typeof importErrorCode)[number];
+
+export type ImportErrorRecord = {
+	rowNumber: number;
+	errorCode: ImportErrorCode;
+	errorMessage: string;
+	rawRow?: Record<string, string>;
+};

@@ -1,22 +1,32 @@
-export { ImportNotFoundError, InvalidImportStatusTransitionError } from "./import-errors";
-export { ImportService } from "./import-service";
+export type { ColumnMapping, ExpectedImportField } from "./column-mapping";
 export {
 	expectedImportFields,
 	suggestColumnMapping,
 	validateColumnMapping,
 } from "./column-mapping";
+export type { ParseCsvResult, ParsedCsvRow } from "./csv-parser";
 export { parseCsvText } from "./csv-parser";
-export { normalizeTransactionRow } from "./transaction-normalizer";
+export {
+	ImportNotFoundError,
+	InvalidImportStatusTransitionError,
+} from "./import-errors";
+export type { ImportRowProcessingResult } from "./import-row-processor";
+export { processImportRows } from "./import-row-processor";
+export { ImportService } from "./import-service";
 export type {
 	AllowedImportTransition,
 	CreateImportInput,
 	FailedImportOutcomeMetadata,
+	ImportErrorCode,
+	ImportErrorRecord,
+	ImportOutcomeMetadata,
 	ImportRecord,
 	ImportRepository,
 	ImportStatus,
-	ImportOutcomeMetadata,
 	TransitionStatusInput,
 } from "./import-types";
-export type { ColumnMapping, ExpectedImportField } from "./column-mapping";
-export type { ParseCsvResult, ParsedCsvRow } from "./csv-parser";
-export type { NormalizedTransactionRow, RowNormalizationError } from "./transaction-normalizer";
+export type {
+	NormalizedTransactionRow,
+	RowNormalizationError,
+} from "./transaction-normalizer";
+export { normalizeTransactionRow } from "./transaction-normalizer";

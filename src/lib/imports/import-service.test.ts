@@ -101,7 +101,10 @@ describe("ImportService", () => {
 			makeImportRecord("processed"),
 		);
 
-		const result = await service.markImportProcessed("import-1", successfulMetadata);
+		const result = await service.markImportProcessed(
+			"import-1",
+			successfulMetadata,
+		);
 
 		expect(repository.transitionStatus).toHaveBeenCalledWith({
 			importId: "import-1",
@@ -197,7 +200,9 @@ describe("ImportService", () => {
 				failureCount: 0,
 				errorMessage: null,
 			}),
-		).rejects.toThrow("rowCount must equal successCount + duplicateCount + failureCount");
+		).rejects.toThrow(
+			"rowCount must equal successCount + duplicateCount + failureCount",
+		);
 	});
 
 	it("throws when failed metadata has empty error message", async () => {

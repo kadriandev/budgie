@@ -3,7 +3,10 @@ import { describe, expect, it } from "vitest";
 import type { ParsedCsvRow } from "./csv-parser";
 import { normalizeTransactionRow } from "./transaction-normalizer";
 
-const makeRow = (values: Record<string, string>, rowNumber = 2): ParsedCsvRow => ({
+const makeRow = (
+	values: Record<string, string>,
+	rowNumber = 2,
+): ParsedCsvRow => ({
 	rowNumber,
 	values,
 });

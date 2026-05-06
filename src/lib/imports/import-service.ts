@@ -5,9 +5,9 @@ import {
 import type {
 	CreateImportInput,
 	FailedImportOutcomeMetadata,
+	ImportOutcomeMetadata,
 	ImportRecord,
 	ImportRepository,
-	ImportOutcomeMetadata,
 	TransitionStatusInput,
 } from "./import-types";
 
@@ -47,7 +47,9 @@ export class ImportService {
 		assertValidOutcomeMetadata(metadata);
 
 		if (metadata.errorMessage.trim().length === 0) {
-			throw new Error("Failed import metadata requires a non-empty errorMessage");
+			throw new Error(
+				"Failed import metadata requires a non-empty errorMessage",
+			);
 		}
 
 		return this.transitionOrThrow({

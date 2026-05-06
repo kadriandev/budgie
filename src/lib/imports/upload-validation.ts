@@ -31,7 +31,10 @@ export const parseImportUploadRequest = async (
 	const userId = request.headers.get("x-user-id")?.trim();
 
 	if (!userId) {
-		throw new UploadValidationError(401, "Missing authentication header x-user-id");
+		throw new UploadValidationError(
+			401,
+			"Missing authentication header x-user-id",
+		);
 	}
 
 	const formData = await request.formData();
@@ -57,10 +60,7 @@ export const parseImportUploadRequest = async (
 
 	const contentType = file.type.toLowerCase();
 	if (!ALLOWED_CONTENT_TYPES.has(contentType)) {
-		throw new UploadValidationError(
-			415,
-			"unsupported file type; expected CSV",
-		);
+		throw new UploadValidationError(415, "unsupported file type; expected CSV");
 	}
 
 	const fileBuffer = Buffer.from(await file.arrayBuffer());
