@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { and, eq, gte, lt, ne } from "drizzle-orm";
+import { and, eq, gte, lt, ne, sql } from "drizzle-orm";
 
 import { db } from "#/db";
 import {
 	envelopeBudgetAllocations,
 	envelopeMonthlySummaries,
 	envelopes,
+	goals,
 	transactions,
 } from "#/db/schema";
 import {
@@ -13,6 +14,7 @@ import {
 	getEnvelopeMonthlyVariance,
 	recomputeEnvelopeMonthlyVariance,
 } from "#/lib/envelope-monthly-variance";
+import { recomputeGoalProgressFromEnvelopeActivity } from "#/lib/goal-progress";
 
 export const Route = createFileRoute("/api/envelopes/$envelopeId/monthly-summary")(
 	{
@@ -110,11 +112,12 @@ export const Route = createFileRoute("/api/envelopes/$envelopeId/monthly-summary
 								? (body as { month: string }).month.trim()
 								: "";
 
-						const row = await recomputeEnvelopeMonthlyVariance(
-							{ userId, envelopeId: params.envelopeId, month },
-							{
-								findOwnedEnvelope: async (envelopeId, currentUserId) =>
-									db
+						const row = await db.transaction(async (tx) => {
+							const summary = await recomputeEnvelopeMonthlyVariance(
+								{ userId, envelopeId: params.envelopeId, month },
+								{
+									findOwnedEnvelope: async (envelopeId, currentUserId) =>
+										tx
 										.select({ id: envelopes.id })
 										.from(envelopes)
 										.where(
@@ -124,8 +127,8 @@ export const Route = createFileRoute("/api/envelopes/$envelopeId/monthly-summary
 											),
 										)
 										.get(),
-								getPlannedAmountForMonth: async (input) => {
-									const allocation = await db
+									getPlannedAmountForMonth: async (input) => {
+										const allocation = await tx
 										.select({ plannedAmount: envelopeBudgetAllocations.plannedAmount })
 										.from(envelopeBudgetAllocations)
 										.where(
@@ -138,8 +141,8 @@ export const Route = createFileRoute("/api/envelopes/$envelopeId/monthly-summary
 
 									return allocation?.plannedAmount ?? null;
 								},
-								listEnvelopeTransactionsForMonth: async (input) =>
-									db
+									listEnvelopeTransactionsForMonth: async (input) =>
+										tx
 										.select({
 											id: transactions.id,
 											date: transactions.date,
@@ -158,8 +161,8 @@ export const Route = createFileRoute("/api/envelopes/$envelopeId/monthly-summary
 												ne(transactions.type, "transfer"),
 											),
 										),
-								upsertEnvelopeMonthlySummary: async (input) =>
-									db
+									upsertEnvelopeMonthlySummary: async (input) =>
+										tx
 										.insert(envelopeMonthlySummaries)
 										.values({
 											id: crypto.randomUUID(),
@@ -192,9 +195,69 @@ export const Route = createFileRoute("/api/envelopes/$envelopeId/monthly-summary
 											calculatedAt: envelopeMonthlySummaries.calculatedAt,
 										})
 										.get(),
-								getEnvelopeMonthlySummary: async () => null,
-							},
-						);
+									getEnvelopeMonthlySummary: async () => null,
+								},
+							);
+
+							await recomputeGoalProgressFromEnvelopeActivity(
+								{ userId, envelopeId: params.envelopeId },
+								{
+									findOwnedGoalByEnvelope: async (currentUserId, envelopeId) =>
+										tx
+										.select({
+											id: goals.id,
+											envelopeId: goals.envelopeId,
+											targetAmount: goals.targetAmount,
+											currentAmount: goals.currentAmount,
+											targetDate: goals.targetDate,
+											suggestedMonthlyContribution: goals.suggestedMonthlyContribution,
+											isCompleted: goals.isCompleted,
+										})
+										.from(goals)
+										.innerJoin(envelopes, eq(goals.envelopeId, envelopes.id))
+										.where(
+											and(
+												eq(envelopes.userId, currentUserId),
+												eq(envelopes.id, envelopeId),
+											),
+										)
+										.get(),
+									listEnvelopeMonthlySummaries: async (envelopeId) =>
+										tx
+										.select({
+											month: envelopeMonthlySummaries.month,
+											plannedAmount:
+												sql<number>`coalesce(${envelopeMonthlySummaries.plannedAmount}, 0)`,
+											actualAmount: envelopeMonthlySummaries.actualAmount,
+											variance:
+												sql<number>`coalesce(${envelopeMonthlySummaries.variance}, 0)`,
+										})
+										.from(envelopeMonthlySummaries)
+										.where(eq(envelopeMonthlySummaries.envelopeId, envelopeId)),
+									updateGoalProgress: async (input) =>
+										tx
+										.update(goals)
+										.set({
+											currentAmount: input.currentAmount,
+											suggestedMonthlyContribution: input.suggestedMonthlyContribution,
+											isCompleted: input.isCompleted,
+										})
+										.where(eq(goals.id, input.goalId))
+										.returning({
+											id: goals.id,
+											envelopeId: goals.envelopeId,
+											targetAmount: goals.targetAmount,
+											currentAmount: goals.currentAmount,
+											targetDate: goals.targetDate,
+											suggestedMonthlyContribution: goals.suggestedMonthlyContribution,
+											isCompleted: goals.isCompleted,
+										})
+										.get(),
+								},
+							);
+
+							return summary;
+						});
 
 						return Response.json({ row }, { status: 200 });
 					} catch (error) {
