@@ -7,10 +7,17 @@ export {
 export type { ParseCsvResult, ParsedCsvRow } from "./csv-parser";
 export { parseCsvText } from "./csv-parser";
 export {
+	type FingerprintContext,
+	createTransactionFingerprint,
+} from "./fingerprint";
+export {
 	ImportNotFoundError,
 	InvalidImportStatusTransitionError,
 } from "./import-errors";
-export type { ImportRowProcessingResult } from "./import-row-processor";
+export type {
+	ImportRowProcessingResult,
+	ProcessImportRowsOptions,
+} from "./import-row-processor";
 export { processImportRows } from "./import-row-processor";
 export { ImportService } from "./import-service";
 export type {

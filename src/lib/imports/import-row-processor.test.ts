@@ -11,7 +11,7 @@ const makeRow = (
 	values,
 });
 
-describe("processImportRows", () => {
+	describe("processImportRows", () => {
 	it("returns valid normalized rows for good input", () => {
 		const result = processImportRows([
 			makeRow(2, {
@@ -20,11 +20,14 @@ describe("processImportRows", () => {
 				amount: "-4.25",
 				merchant: "Blue Bottle",
 			}),
-		]);
+		], {
+			context: { userId: "user-1", accountId: "account-1" },
+		});
 
 		expect(result.errors).toHaveLength(0);
 		expect(result.validRows).toHaveLength(1);
 		expect(result.validRows[0]?.description).toBe("Coffee");
+		expect(result.validRows[0]?.fingerprint).toHaveLength(64);
 	});
 
 	it("captures normalization errors with row metadata", () => {
@@ -33,7 +36,9 @@ describe("processImportRows", () => {
 				description: "Coffee",
 				amount: "-4.25",
 			}),
-		]);
+		], {
+			context: { userId: "user-1", accountId: "account-1" },
+		});
 
 		expect(result.validRows).toHaveLength(0);
 		expect(result.errors).toHaveLength(1);
@@ -51,7 +56,9 @@ describe("processImportRows", () => {
 				description: "Future txn",
 				amount: "-10.00",
 			}),
-		]);
+		], {
+			context: { userId: "user-1", accountId: "account-1" },
+		});
 
 		expect(result.validRows).toHaveLength(0);
 		expect(result.errors).toHaveLength(1);
@@ -60,5 +67,35 @@ describe("processImportRows", () => {
 			errorCode: "validation_error",
 			errorMessage: "Date cannot be in the future",
 		});
+	});
+
+	it("captures duplicate rows as duplicate_row errors", () => {
+		const result = processImportRows(
+			[
+				makeRow(2, {
+					date: "2026-05-01",
+					description: "Coffee",
+					amount: "-4.25",
+					merchant: "Blue Bottle",
+				}),
+				makeRow(3, {
+					date: "2026-05-01",
+					description: "Coffee",
+					amount: "-4.25",
+					merchant: "Blue Bottle",
+				}),
+			],
+			{
+				context: { userId: "user-1", accountId: "account-1" },
+			},
+		);
+
+		expect(result.validRows).toHaveLength(1);
+		expect(result.errors).toHaveLength(1);
+		expect(result.errors[0]).toMatchObject({
+			rowNumber: 3,
+			errorCode: "duplicate_row",
+		});
+		expect(result.duplicateFingerprints).toHaveLength(1);
 	});
 });

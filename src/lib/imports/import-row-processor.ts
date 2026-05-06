@@ -1,4 +1,6 @@
 import type { ParsedCsvRow } from "./csv-parser";
+import type { FingerprintContext } from "./fingerprint";
+import { createTransactionFingerprint } from "./fingerprint";
 import type { ImportErrorRecord } from "./import-types";
 import {
 	type NormalizedTransactionRow,
@@ -6,15 +8,24 @@ import {
 } from "./transaction-normalizer";
 
 export type ImportRowProcessingResult = {
-	validRows: NormalizedTransactionRow[];
+	validRows: (NormalizedTransactionRow & { fingerprint: string })[];
 	errors: ImportErrorRecord[];
+	duplicateFingerprints: string[];
+};
+
+export type ProcessImportRowsOptions = {
+	context: FingerprintContext;
+	existingFingerprints?: Set<string>;
 };
 
 export const processImportRows = (
 	rows: ParsedCsvRow[],
+	options: ProcessImportRowsOptions,
 ): ImportRowProcessingResult => {
-	const validRows: NormalizedTransactionRow[] = [];
+	const validRows: (NormalizedTransactionRow & { fingerprint: string })[] = [];
 	const errors: ImportErrorRecord[] = [];
+	const duplicateFingerprints: string[] = [];
+	const seenFingerprints = new Set(options.existingFingerprints ?? []);
 
 	for (const row of rows) {
 		const normalizedOrError = normalizeTransactionRow(row);
@@ -40,10 +51,31 @@ export const processImportRows = (
 			continue;
 		}
 
-		validRows.push(normalizedOrError);
+		const fingerprint = createTransactionFingerprint(
+			normalizedOrError,
+			options.context,
+		);
+
+		if (seenFingerprints.has(fingerprint)) {
+			errors.push({
+				rowNumber: normalizedOrError.rowNumber,
+				errorCode: "duplicate_row",
+				errorMessage: "Duplicate transaction row detected",
+				rawRow: row.values,
+			});
+			duplicateFingerprints.push(fingerprint);
+			continue;
+		}
+
+		seenFingerprints.add(fingerprint);
+
+		validRows.push({
+			...normalizedOrError,
+			fingerprint,
+		});
 	}
 
-	return { validRows, errors };
+	return { validRows, errors, duplicateFingerprints };
 };
 
 const validateNormalizedRow = (
