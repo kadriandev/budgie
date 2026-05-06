@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte, lt, ne } from "drizzle-orm";
 
 import { db } from "#/db";
-import { envelopes, transactions } from "#/db/schema";
+import { envelopes, monthlySummaries, transactions } from "#/db/schema";
 import {
 	applyManualTransactionClassification,
 	ManualClassificationError,
 } from "#/lib/imports/manual-classification";
+import { recomputeMonthlySummaryForDate } from "#/lib/monthly-summary-recompute";
 
 const validBuckets = new Set(["needs", "wants", "savings"] as const);
 
@@ -147,6 +148,78 @@ export const Route = createFileRoute("/api/transactions/$transactionId/classific
 							},
 						},
 					);
+
+					const updatedTransaction = await db
+						.select({ date: transactions.date })
+						.from(transactions)
+						.where(
+							and(
+								eq(transactions.id, params.transactionId),
+								eq(transactions.userId, userId),
+							),
+						)
+						.get();
+
+					if (updatedTransaction) {
+						try {
+							await recomputeMonthlySummaryForDate(
+								{ userId, date: updatedTransaction.date },
+								{
+									listTransactionsForMonth: async (input) =>
+										db
+											.select({
+												amount: transactions.amount,
+												type: transactions.type,
+												bucket: transactions.bucket,
+											})
+											.from(transactions)
+											.where(
+												and(
+													eq(transactions.userId, input.userId),
+													gte(transactions.date, input.monthStart),
+													lt(transactions.date, input.nextMonthStart),
+													ne(transactions.type, "transfer"),
+												),
+											),
+									upsertMonthlySummary: async (input) =>
+										db
+											.insert(monthlySummaries)
+											.values({
+												id: crypto.randomUUID(),
+												userId: input.userId,
+												month: input.month,
+												income: input.income,
+												needsTotal: input.needsTotal,
+												wantsTotal: input.wantsTotal,
+												savingsTotal: input.savingsTotal,
+												needsPercent: input.needsPercent,
+												wantsPercent: input.wantsPercent,
+												savingsPercent: input.savingsPercent,
+												alignmentScore: input.alignmentScore,
+												calculatedAt: new Date(),
+											})
+											.onConflictDoUpdate({
+												target: [monthlySummaries.userId, monthlySummaries.month],
+												set: {
+													income: input.income,
+													needsTotal: input.needsTotal,
+													wantsTotal: input.wantsTotal,
+													savingsTotal: input.savingsTotal,
+													needsPercent: input.needsPercent,
+													wantsPercent: input.wantsPercent,
+													savingsPercent: input.savingsPercent,
+													alignmentScore: input.alignmentScore,
+													calculatedAt: new Date(),
+												},
+											})
+											.returning()
+											.get(),
+								},
+							);
+						} catch {
+							// Recompute failures should not roll back manual user changes.
+						}
+					}
 
 					return Response.json(updated, { status: 200 });
 				} catch (error) {
