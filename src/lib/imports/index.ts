@@ -16,6 +16,14 @@ export {
 } from "./import-errors";
 export type { ClassificationResult } from "./merchant-classifier";
 export { classifyTransactionWithMerchantRules } from "./merchant-classifier";
+export {
+	applyManualTransactionClassification,
+	ManualClassificationError,
+} from "./manual-classification";
+export type {
+	ManualClassificationInput,
+	ManualClassificationResult,
+} from "./manual-classification";
 export type { ClassifiedImportRow, ImportClassificationRow } from "./post-import-classifier";
 export { applyPostImportClassification } from "./post-import-classifier";
 export type {

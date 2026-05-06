@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as TransactionsRouteImport } from './routes/transactions'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiImportsRouteImport } from './routes/api.imports'
+import { Route as ApiTransactionsTransactionIdClassificationRouteImport } from './routes/api.transactions.$transactionId.classification'
 
 const TransactionsRoute = TransactionsRouteImport.update({
   id: '/transactions',
@@ -28,35 +29,58 @@ const ApiImportsRoute = ApiImportsRouteImport.update({
   path: '/api/imports',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTransactionsTransactionIdClassificationRoute =
+  ApiTransactionsTransactionIdClassificationRouteImport.update({
+    id: '/api/transactions/$transactionId/classification',
+    path: '/api/transactions/$transactionId/classification',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/transactions': typeof TransactionsRoute
   '/api/imports': typeof ApiImportsRoute
+  '/api/transactions/$transactionId/classification': typeof ApiTransactionsTransactionIdClassificationRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/transactions': typeof TransactionsRoute
   '/api/imports': typeof ApiImportsRoute
+  '/api/transactions/$transactionId/classification': typeof ApiTransactionsTransactionIdClassificationRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/transactions': typeof TransactionsRoute
   '/api/imports': typeof ApiImportsRoute
+  '/api/transactions/$transactionId/classification': typeof ApiTransactionsTransactionIdClassificationRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/transactions' | '/api/imports'
+  fullPaths:
+    | '/'
+    | '/transactions'
+    | '/api/imports'
+    | '/api/transactions/$transactionId/classification'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/transactions' | '/api/imports'
-  id: '__root__' | '/' | '/transactions' | '/api/imports'
+  to:
+    | '/'
+    | '/transactions'
+    | '/api/imports'
+    | '/api/transactions/$transactionId/classification'
+  id:
+    | '__root__'
+    | '/'
+    | '/transactions'
+    | '/api/imports'
+    | '/api/transactions/$transactionId/classification'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   TransactionsRoute: typeof TransactionsRoute
   ApiImportsRoute: typeof ApiImportsRoute
+  ApiTransactionsTransactionIdClassificationRoute: typeof ApiTransactionsTransactionIdClassificationRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +106,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiImportsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/transactions/$transactionId/classification': {
+      id: '/api/transactions/$transactionId/classification'
+      path: '/api/transactions/$transactionId/classification'
+      fullPath: '/api/transactions/$transactionId/classification'
+      preLoaderRoute: typeof ApiTransactionsTransactionIdClassificationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +120,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   TransactionsRoute: TransactionsRoute,
   ApiImportsRoute: ApiImportsRoute,
+  ApiTransactionsTransactionIdClassificationRoute:
+    ApiTransactionsTransactionIdClassificationRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
