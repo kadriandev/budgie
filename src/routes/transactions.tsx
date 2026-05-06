@@ -1,6 +1,6 @@
-import { useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { UploadIcon } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 
 import { Button } from "#/components/ui/button";
 import {
@@ -36,10 +36,10 @@ import {
 } from "#/components/ui/table";
 
 import {
-	expectedImportFields,
-	suggestColumnMapping,
 	type ColumnMapping,
 	type ExpectedImportField,
+	expectedImportFields,
+	suggestColumnMapping,
 	validateColumnMapping,
 } from "#/lib/imports/column-mapping";
 import { parseCsvText } from "#/lib/imports/csv-parser";
@@ -79,16 +79,23 @@ function TransactionsPage() {
 	const [isMapperOpen, setIsMapperOpen] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-	const mappingValidation = useMemo(() => validateColumnMapping(mapping), [mapping]);
+	const mappingValidation = useMemo(
+		() => validateColumnMapping(mapping),
+		[mapping],
+	);
 	const secondRowValues = previewRows[0] ?? {};
 
 	const mappedPreviewRows = useMemo(
 		() =>
 			previewRows.map((row) => ({
-				date: mapping.date ? row[mapping.date] ?? "" : "",
-				description: mapping.description ? row[mapping.description] ?? "" : "",
-				amount: mapping.amount ? row[mapping.amount] ?? "" : "",
-				merchantName: mapping.merchantName ? row[mapping.merchantName] ?? "" : "",
+				date: mapping.date ? (row[mapping.date] ?? "") : "",
+				description: mapping.description
+					? (row[mapping.description] ?? "")
+					: "",
+				amount: mapping.amount ? (row[mapping.amount] ?? "") : "",
+				merchantName: mapping.merchantName
+					? (row[mapping.merchantName] ?? "")
+					: "",
 			})),
 		[previewRows, mapping],
 	);
@@ -160,7 +167,9 @@ function TransactionsPage() {
 			<Card>
 				<CardHeader>
 					<CardTitle>Recent Transactions</CardTitle>
-					<CardDescription>Current transactions in your account.</CardDescription>
+					<CardDescription>
+						Current transactions in your account.
+					</CardDescription>
 				</CardHeader>
 				<CardContent>
 					<Table>
@@ -186,7 +195,10 @@ function TransactionsPage() {
 				</CardContent>
 			</Card>
 
-			<Dialog open={fileName ? isMapperOpen : false} onOpenChange={setIsMapperOpen}>
+			<Dialog
+				open={fileName ? isMapperOpen : false}
+				onOpenChange={setIsMapperOpen}
+			>
 				<DialogContent className="max-h-[90vh] max-w-4xl overflow-auto">
 					<DialogHeader>
 						<DialogTitle>Column Mapper</DialogTitle>
@@ -199,20 +211,25 @@ function TransactionsPage() {
 						<>
 							<div className="grid grid-cols-1 gap-3 md:grid-cols-2">
 								{expectedImportFields.map((field) => (
-									<label key={field} className="flex flex-col gap-1 text-sm">
+									<div key={field} className="flex flex-col gap-1 text-sm">
 										<span className="font-medium">{field}</span>
 										<Select
 											value={mapping[field] ?? ""}
 											onValueChange={(value) => updateMappedField(field, value)}
 										>
-											<SelectTrigger className="w-full">
+											<SelectTrigger className="w-full" id={`map-${field}`}>
 												<SelectValue placeholder="Select CSV column" />
 											</SelectTrigger>
 											<SelectContent>
 												<SelectGroup>
-													<SelectItem value="__none__">Select CSV column</SelectItem>
+													<SelectItem value="__none__">
+														Select CSV column
+													</SelectItem>
 													{headers.map((header) => (
-														<SelectItem key={`${field}-${header}`} value={header}>
+														<SelectItem
+															key={`${field}-${header}`}
+															value={header}
+														>
 															{header}
 															{secondRowValues[header]
 																? ` (${secondRowValues[header]})`
@@ -222,7 +239,7 @@ function TransactionsPage() {
 												</SelectGroup>
 											</SelectContent>
 										</Select>
-									</label>
+									</div>
 								))}
 							</div>
 
@@ -253,14 +270,16 @@ function TransactionsPage() {
 											</TableRow>
 										</TableHeader>
 										<TableBody>
-												{mappedPreviewRows.map((row, index) => (
-													<TableRow key={`preview-${index}`}>
-														<TableCell>{row.date}</TableCell>
-														<TableCell>{row.description}</TableCell>
-														<TableCell>{row.amount}</TableCell>
-														<TableCell>{row.merchantName}</TableCell>
-													</TableRow>
-												))}
+											{mappedPreviewRows.map((row) => (
+												<TableRow
+													key={`${row.date}-${row.description}-${row.amount}-${row.merchantName}`}
+												>
+													<TableCell>{row.date}</TableCell>
+													<TableCell>{row.description}</TableCell>
+													<TableCell>{row.amount}</TableCell>
+													<TableCell>{row.merchantName}</TableCell>
+												</TableRow>
+											))}
 										</TableBody>
 									</Table>
 								</div>

@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "biome-developer": {
+      "source": "biomejs/biome",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/biome-developer/SKILL.md",
+      "computedHash": "3a9e05cb3f7254cc8adb9341716f3a056beaee54836f76bfd9968e71a510a513"
+    },
+    "cli-gh": {
+      "source": "paulrberg/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/cli-gh/SKILL.md",
+      "computedHash": "d97a2567020650d354c3794a90efc4ad6bd6f0b4b4fe1fc24ca705d0c36c57f6"
+    },
+    "shadcn": {
+      "source": "shadcn/ui",
+      "sourceType": "github",
+      "skillPath": "skills/shadcn/SKILL.md",
+      "computedHash": "80a6226e78f6d1fe464214ae0ef449d49d8ffaa3e7704f011e9b418c678ad4d1"
+    }
+  }
+}

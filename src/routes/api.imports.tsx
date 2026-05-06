@@ -2,12 +2,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { and, eq } from "drizzle-orm";
 
 import { db } from "#/db";
-import { accounts } from "#/db/schema";
 import { importRepository } from "#/db/repositories/import-repository";
+import { accounts } from "#/db/schema";
 import { ImportService } from "#/lib/imports";
 import {
-	UploadValidationError,
 	parseImportUploadRequest,
+	UploadValidationError,
 } from "#/lib/imports/upload-validation";
 
 const importService = new ImportService(importRepository);
@@ -31,7 +31,10 @@ export const Route = createFileRoute("/api/imports")({
 						.get();
 
 					if (!account) {
-						return Response.json({ error: "account not found" }, { status: 403 });
+						return Response.json(
+							{ error: "account not found" },
+							{ status: 403 },
+						);
 					}
 
 					const createdImport = await importService.createImport(payload);
@@ -47,10 +50,16 @@ export const Route = createFileRoute("/api/imports")({
 					);
 				} catch (error) {
 					if (error instanceof UploadValidationError) {
-						return Response.json({ error: error.message }, { status: error.status });
+						return Response.json(
+							{ error: error.message },
+							{ status: error.status },
+						);
 					}
 
-					return Response.json({ error: "failed to create import" }, { status: 500 });
+					return Response.json(
+						{ error: "failed to create import" },
+						{ status: 500 },
+					);
 				}
 			},
 		},

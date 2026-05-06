@@ -52,7 +52,10 @@ export const suggestColumnMapping = (
 
 const isDateLike = (value: string): boolean => {
 	if (!value) return false;
-	return /^\d{4}-\d{2}-\d{2}$/.test(value) || /^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(value);
+	return (
+		/^\d{4}-\d{2}-\d{2}$/.test(value) ||
+		/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(value)
+	);
 };
 
 const isAmountLike = (value: string): boolean => {

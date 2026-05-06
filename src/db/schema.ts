@@ -1,8 +1,8 @@
 import { relations, sql } from "drizzle-orm";
 import {
+	check,
 	index,
 	integer,
-	check,
 	real,
 	sqliteTable,
 	text,
@@ -17,6 +17,11 @@ export const importStatus = [
 	"processing",
 	"processed",
 	"failed",
+] as const;
+export const importErrorCode = [
+	"normalization_error",
+	"validation_error",
+	"duplicate_row",
 ] as const;
 
 // Users are optional if this is single-user self-hosted,
@@ -78,12 +83,18 @@ export const imports = sqliteTable(
 	(table) => [
 		uniqueIndex("imports_file_hash_idx").on(table.fileHash),
 		check("imports_row_count_non_negative", sql`${table.rowCount} >= 0`),
-		check("imports_success_count_non_negative", sql`${table.successCount} >= 0`),
+		check(
+			"imports_success_count_non_negative",
+			sql`${table.successCount} >= 0`,
+		),
 		check(
 			"imports_duplicate_count_non_negative",
 			sql`${table.duplicateCount} >= 0`,
 		),
-		check("imports_failure_count_non_negative", sql`${table.failureCount} >= 0`),
+		check(
+			"imports_failure_count_non_negative",
+			sql`${table.failureCount} >= 0`,
+		),
 		check(
 			"imports_count_totals_match",
 			sql`${table.rowCount} = ${table.successCount} + ${table.duplicateCount} + ${table.failureCount}`,
@@ -124,6 +135,26 @@ export const envelopes = sqliteTable(
 			.default(sql`CURRENT_TIMESTAMP`),
 	},
 	(table) => [index("envelopes_user_idx").on(table.userId)],
+);
+
+export const importErrors = sqliteTable(
+	"import_errors",
+	{
+		id: text("id").primaryKey(),
+		importId: text("import_id")
+			.notNull()
+			.references(() => imports.id, { onDelete: "cascade" }),
+		rowNumber: integer("row_number").notNull(),
+		errorCode: text("error_code", { enum: importErrorCode }).notNull(),
+		errorMessage: text("error_message").notNull(),
+		rawRow: text("raw_row"),
+		createdAt: integer("created_at", { mode: "timestamp" })
+			.notNull()
+			.default(sql`CURRENT_TIMESTAMP`),
+	},
+	(table) => [
+		index("import_errors_import_row_idx").on(table.importId, table.rowNumber),
+	],
 );
 
 export const goals = sqliteTable("goals", {
@@ -306,6 +337,19 @@ export const usersRelations = relations(users, ({ many }) => ({
 	merchantRules: many(merchantRules),
 }));
 
+export const importsRelations = relations(imports, ({ one, many }) => ({
+	user: one(users, {
+		fields: [imports.userId],
+		references: [users.id],
+	}),
+	account: one(accounts, {
+		fields: [imports.accountId],
+		references: [accounts.id],
+	}),
+	errors: many(importErrors),
+	transactions: many(transactions),
+}));
+
 export const accountsRelations = relations(accounts, ({ one, many }) => ({
 	user: one(users, {
 		fields: [accounts.userId],
@@ -346,6 +390,13 @@ export const transactionsRelations = relations(transactions, ({ one }) => ({
 	}),
 	import: one(imports, {
 		fields: [transactions.importId],
+		references: [imports.id],
+	}),
+}));
+
+export const importErrorsRelations = relations(importErrors, ({ one }) => ({
+	import: one(imports, {
+		fields: [importErrors.importId],
 		references: [imports.id],
 	}),
 }));
