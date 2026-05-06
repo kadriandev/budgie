@@ -3,13 +3,13 @@ import { describe, expect, it, vi } from "vitest";
 import {
 	ImportNotFoundError,
 	InvalidImportStatusTransitionError,
-} from "./import-errors";
-import { ImportService } from "./import-service";
+} from "../import-errors";
+import { ImportService } from "../import-service";
 import type {
 	ImportOutcomeMetadata,
 	ImportRecord,
 	ImportRepository,
-} from "./import-types";
+} from "../import-types";
 
 const successfulMetadata: ImportOutcomeMetadata = {
 	rowCount: 10,
@@ -95,7 +95,8 @@ describe("ImportService", () => {
 
 	it("transitions processing -> processed and persists outcome metadata", async () => {
 		const repository = makeRepositoryMock();
-		const service = new ImportService(repository);
+		const onImportProcessed = vi.fn().mockResolvedValue(undefined);
+		const service = new ImportService(repository, { onImportProcessed });
 
 		vi.mocked(repository.transitionStatus).mockResolvedValue(
 			makeImportRecord("processed"),
@@ -112,7 +113,38 @@ describe("ImportService", () => {
 			to: "processed",
 			metadata: successfulMetadata,
 		});
+		expect(onImportProcessed).toHaveBeenCalledWith(makeImportRecord("processed"));
 		expect(result).toEqual(makeImportRecord("processed"));
+	});
+
+	it("does not trigger processed callback on failed transition", async () => {
+		const repository = makeRepositoryMock();
+		const onImportProcessed = vi.fn().mockResolvedValue(undefined);
+		const service = new ImportService(repository, { onImportProcessed });
+
+		vi.mocked(repository.transitionStatus).mockResolvedValue(
+			makeImportRecord("failed"),
+		);
+
+		await service.markImportFailed("import-1", failedMetadata);
+		expect(onImportProcessed).not.toHaveBeenCalled();
+	});
+
+	it("returns processed import even if processed callback throws", async () => {
+		const repository = makeRepositoryMock();
+		const onImportProcessed = vi.fn().mockRejectedValue(new Error("boom"));
+		const service = new ImportService(repository, { onImportProcessed });
+
+		vi.mocked(repository.transitionStatus).mockResolvedValue(
+			makeImportRecord("processed"),
+		);
+
+		const result = await service.markImportProcessed(
+			"import-1",
+			successfulMetadata,
+		);
+
+		expect(result.status).toBe("processed");
 	});
 
 	it("transitions processing -> failed and persists failure metadata", async () => {

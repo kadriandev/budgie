@@ -11,8 +11,15 @@ import type {
 	TransitionStatusInput,
 } from "./import-types";
 
+type Deps = {
+	onImportProcessed?: (record: ImportRecord) => Promise<void>;
+};
+
 export class ImportService {
-	constructor(private readonly repository: ImportRepository) {}
+	constructor(
+		private readonly repository: ImportRepository,
+		private readonly deps: Deps = {},
+	) {}
 
 	createImport(input: CreateImportInput): Promise<ImportRecord> {
 		return this.repository.insertPending(input);
@@ -37,6 +44,13 @@ export class ImportService {
 			from: "processing",
 			to: "processed",
 			metadata,
+		}).then(async (record) => {
+			try {
+				await this.deps.onImportProcessed?.(record);
+			} catch {
+				// Side effects should never invalidate a successful status transition.
+			}
+			return record;
 		});
 	}
 
